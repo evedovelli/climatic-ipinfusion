@@ -1,0 +1,2 @@
+climatic==0.0.1
+pexpect==4.8.0
