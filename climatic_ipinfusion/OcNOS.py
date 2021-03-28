@@ -58,8 +58,8 @@ class SshOcNOS(OcNOS):
             index = self.connection.terminal.expect(
                 ['Are you sure you want to continue connecting',
                  'password',
-                 '\n[^\s]+>',
-                 '\n[^\s]+#'],
+                 r'\n[^\s]+>',
+                 r'\n[^\s]+#'],
                 timeout=10)
 
             if index == 0:
@@ -77,9 +77,9 @@ class SshOcNOS(OcNOS):
         """
         # Send exit until login is reached.
         self.connection.terminal.sendline()
-        self.connection.terminal.expect('\n[^ ]+#', timeout=5)
+        self.connection.terminal.expect(r'\n[^ ]+#', timeout=5)
         self.connection.terminal.sendline('exit')
-        self.connection.terminal.expect('\n[^ ]+>', timeout=5)
+        self.connection.terminal.expect(r'\n[^ ]+>', timeout=5)
         self.connection.terminal.sendline('exit')
 
 
@@ -111,7 +111,7 @@ class Ser2NetOcNOS(OcNOS):
         iteration = 0
         while True:
             index = self.connection.terminal.expect(
-                ['login', 'Password', '\n[^\s]*>', '\n[^\s]*#', pexpect.TIMEOUT],
+                ['login', 'Password', r'\n[^\s]*>', r'\n[^\s]*#', pexpect.TIMEOUT],
                 timeout=self.timeout)
 
             if index == 0:
@@ -127,9 +127,9 @@ class Ser2NetOcNOS(OcNOS):
         self.connection.terminal.expect('Password:')
         self.connection.terminal.waitnoecho()
         self.connection.terminal.sendline(self.password)
-        self.connection.terminal.expect('\n[^ ]+>', timeout=self.timeout)
+        self.connection.terminal.expect(r'\n[^ ]+>', timeout=self.timeout)
         self.connection.terminal.sendline('enable')
-        self.connection.terminal.expect('\n[^ ]+#', timeout=self.timeout)
+        self.connection.terminal.expect(r'\n[^ ]+#', timeout=self.timeout)
 
 
     def logout(self):
@@ -141,7 +141,7 @@ class Ser2NetOcNOS(OcNOS):
             self.connection.terminal.sendline()
 
         while True:
-            index = self.connection.terminal.expect(['login:', 'closed', '\n[^\s]*>', '\n[^\s]*#'],
+            index = self.connection.terminal.expect(['login:', 'closed', r'\n[^\s]*>', r'\n[^\s]*#'],
                                                     timeout=self.timeout)
             if index <= 1:
                 break
