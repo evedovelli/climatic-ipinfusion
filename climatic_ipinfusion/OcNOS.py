@@ -5,6 +5,7 @@ from climatic.connections.Ssh import Ssh
 from climatic.connections.Ssh import PTY_WINSIZE_COLS as SSH_PTY_WINSIZE_COLS
 from climatic.connections.Ser2Net import Ser2Net
 from climatic.connections.Ser2Net import PTY_WINSIZE_COLS as SER2NET_PTY_WINSIZE_COLS
+from typing import Optional
 
 
 ####################################################################################################
@@ -14,20 +15,19 @@ class OcNOS(CoreCli):
     """ Extend CoreCli with IP Infusion's OcNOS customizations.
     """
 
-    def run(self, cmds: str, **run_opts):
-        """ Execute commands on OcNOS CLI
-
-        @param cmds      A multi-line string with commands to be executed.
-        @param run_opts  Same options as CoreCli run method.
+    def __init__(self, connection, **opts):
+        """ Initialize OcNOS CLI.
+        @param connection  The connection object to be used for accessing the CLI.
+        @param opts        Same options as CoreCli initializer.
         """
-        if not 'marker' in run_opts:
-            run_opts['marker'] = '\n[^ ]+#'
+        if not 'marker' in opts:
+            self.marker = '\n[^ ]+#'
+        if not 'error_marker' in opts:
+            self.error_marker = '%'
 
-        if not 'error_marker' in run_opts:
-            run_opts['error_marker'] = '%'
-
-        return super(OcNOS, self).run(cmds, **run_opts)
-
+        CoreCli.__init__(self,
+                         connection,
+                         **opts)
 
 ####################################################################################################
 ## SshOcNOS
@@ -36,12 +36,18 @@ class SshOcNOS(OcNOS):
     """ Connects to a OcNOS CLI using SSH.
     """
 
-    def __init__(self, ip: str, username="ocnos", password="ocnos", port=22):
-        """ Initialize OcNOS CLI.
+    def __init__(self,
+                 ip: str,
+                 username: Optional[str]="ocnos",
+                 password: Optional[str]="ocnos",
+                 port: Optional[int]=22,
+                 **opts):
+        """ Initialize SSH OcNOS CLI.
         @param ip          IP address of target. Ex: '234.168.10.12'
         @param username    username for opening SSH connection
         @param password    password for authentication in SSH connection
         @param port        Port used for SSH connection. Defaults to 22
+        @param opts        Same options as CoreCli initializer.
         """
         self.name = "OcNOS.SSH"
         ssh = Ssh(ip, username, port=port)
@@ -49,7 +55,8 @@ class SshOcNOS(OcNOS):
                        ssh,
                        username=username,
                        password=password,
-                       pty_winsize_cols=SSH_PTY_WINSIZE_COLS)
+                       pty_winsize_cols=SSH_PTY_WINSIZE_COLS,
+                       **opts)
 
     def login(self):
         """ Login to CLI interface.
@@ -90,12 +97,18 @@ class Ser2NetOcNOS(OcNOS):
     """ Connects to a OcNOS CLI using Ser2Net.
     """
 
-    def __init__(self, ip: str, port: int, username="ocnos", password="ocnos"):
+    def __init__(self,
+                 ip: str,
+                 port: int,
+                 username: Optional[str]="ocnos",
+                 password: Optional[str]="ocnos",
+                 **opts):
         """ Initialize OcNOS CLI.
         @param ip        IP address of target. Ex: '234.168.10.12'
         @param port      The port corresponding to the desired serial device.
         @param username  username for authentication to OcNOS.
         @param password  password for authentication to OcNOS.
+        @param opts        Same options as CoreCli initializer.
         """
         self.name = "OcNOS.Ser2Net"
         ser2net = Ser2Net(ip, port)
@@ -103,7 +116,8 @@ class Ser2NetOcNOS(OcNOS):
                        ser2net,
                        username=username,
                        password=password,
-                       pty_winsize_cols=SER2NET_PTY_WINSIZE_COLS)
+                       pty_winsize_cols=SER2NET_PTY_WINSIZE_COLS,
+                       **opts)
 
     def login(self):
         """ Login to CLI interface.
